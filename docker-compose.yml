@@ -1,0 +1,80 @@
+version: '3.9'
+
+services:
+    php:
+        build:
+            args:
+                user: todo
+                uid: 1000
+            context: ./infra/php-fpm
+        container_name: todo-fpm
+        restart: unless-stopped
+        volumes:
+            - ./:/var/www
+        networks:
+            - todo
+        ports:
+            - 9000:9000
+        depends_on:
+            - db
+    db:
+        image: mysql:8.0
+        container_name: todo-mysql
+        restart: unless-stopped
+        environment:
+            MYSQL_PASSWORD: Password1
+            MYSQL_RANDOM_ROOT_PASSWORD: yes
+            MYSQL_USER: todo
+        volumes:
+            - ./infra/mysql:/docker-entrypoint-initdb.d
+            - tododbvol:/var/lib/mysql:delegated
+        ports:
+            - 3305:3306
+        command:
+            --sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+        networks:
+            - todo
+    redis:
+        container_name: todo-redis
+        image: redis:7.2
+        command: redis-server --requirepass Password1
+        ports:
+            - 6379:6379
+        volumes:
+            - todoredisvol:/data
+        networks:
+            - todo
+    nginx:
+        image: nginx:1.22
+        container_name: todo-nginx
+        restart: unless-stopped
+        ports:
+            - "8099:80"
+        depends_on:
+            - php
+        volumes:
+            - ./:/var/www
+            - ./infra/nginx:/etc/nginx/conf.d
+        networks:
+            - todo
+    mailpit:
+        image: axllent/mailpit
+        container_name: todo-mailpit
+        restart: unless-stopped
+        ports:
+            - 8025:8025
+            - 1025:1025
+        volumes:
+            - todomailvol:/data
+        networks:
+            - todo
+
+
+volumes:
+    tododbvol:
+    todomailvol:
+    todoredisvol:
+
+networks:
+    todo:
+        driver: bridge
