@@ -26,6 +26,8 @@ Route::group(['prefix' => 'todo', 'as' => 'todo.'], function () {
 Route::group(['prefix' => 'auth', 'as' => 'auth.'], function () {
     Route::post('/login', [\App\Http\Controllers\AuthController::class, 'login'])->name('login');
     Route::post('/register', [\App\Http\Controllers\AuthController::class, 'register'])->name('register');
+
+    Route::post('/logout', [\App\Http\Controllers\AuthController::class, 'logout'])->name('logout')->middleware('auth:sanctum');
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

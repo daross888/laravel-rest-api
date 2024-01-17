@@ -44,4 +44,11 @@ class AuthController extends BaseApiController
             'token' => $user->createToken('auth_token')->plainTextToken,
         ], 201);
     }
+
+    public function logout(): JsonResponse
+    {
+        $this->authService->logout();
+
+        return $this->successResponse('ok');
+    }
 }

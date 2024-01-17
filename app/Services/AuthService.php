@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Exceptions\NotFoundException;
 use App\Models\User;
 use App\Repositories\UserRepository;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthService
@@ -35,5 +36,13 @@ class AuthService
         }
 
         return $user;
+    }
+
+    public function logout(): void
+    {
+        $user = $this->userRepository->findById(Auth::id());
+        if ($user) {
+            $user->tokens()->delete();
+        }
     }
 }

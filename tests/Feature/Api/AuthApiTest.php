@@ -4,6 +4,7 @@ namespace Tests\Feature\Api;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class AuthApiTest extends TestCase
@@ -58,5 +59,17 @@ class AuthApiTest extends TestCase
 
         $this->assertFalse($responseBody['success']);
         $this->assertEquals('The email has already been taken.', $responseBody['errors']['email'][0]);
+    }
+
+    public function test_user_can_logout(): void
+    {
+        $user = User::first();
+        Sanctum::actingAs($user);
+        $this->assertAuthenticatedAs($user);
+
+        $response = $this->post('/api/v1/auth/logout');
+        $response->assertStatus(200);
+
+        $this->assertCount(0, $user->tokens);
     }
 }
