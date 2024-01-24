@@ -8,19 +8,24 @@ use Illuminate\Support\Collection;
 class TodoRepository
 {
 
-    public function all(): Collection
+    public function all(?int $user_id = null): Collection
     {
-        return Todo::query()->orderBy('id', 'desc')->get();
+        return Todo::query()->when($user_id, function ($query) use($user_id) {
+            $query->where('user_id', $user_id);
+        })->orderBy('id', 'desc')->get();
     }
 
-    public function findById(int $id): ?Todo
+    public function findById(int $id, ?int $user_id = null): ?Todo
     {
-        return Todo::find($id);
+        return Todo::where('id', $id)->when($user_id, function ($query) use($user_id) {
+            $query->where('user_id', $user_id);
+        })->first();
     }
 
     public function create(array $data): Todo
     {
         return Todo::create([
+            'user_id' => $data['user_id'],
             'title' => $data['title'],
             'done' => false,
         ]);

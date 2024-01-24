@@ -14,17 +14,17 @@ class TodoService
         protected TodoRepository $todoRepository
     ) {}
 
-    public function findAll(): Collection
+    public function findAll(?int $user_id = null): Collection
     {
-        return $this->todoRepository->all();
+        return $this->todoRepository->all($user_id);
     }
 
     /**
      * @throws NotFoundException
      */
-    public function findById(int $id): ?Todo
+    public function findById(int $id, ?int $user_id = null): ?Todo
     {
-        if (!$todo = $this->todoRepository->findById($id)) {
+        if (!$todo = $this->todoRepository->findById($id, $user_id)) {
             throw new NotFoundException('Todo not found');
         }
 

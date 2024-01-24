@@ -7,6 +7,7 @@ use App\Http\Requests\CreateTodoRequest;
 use App\Http\Requests\UpdateTodoRequest;
 use App\Services\TodoService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class TodoController extends BaseApiController
 {
@@ -16,7 +17,7 @@ class TodoController extends BaseApiController
 
     public function index(): JsonResponse
     {
-        $todos = $this->todoService->findAll();
+        $todos = $this->todoService->findAll(Auth::id());
 
         return $this->successResponse($todos);
     }
@@ -24,7 +25,7 @@ class TodoController extends BaseApiController
     public function show(string $id): JsonResponse
     {
         try {
-            $todo = $this->todoService->findById($id);
+            $todo = $this->todoService->findById($id, Auth::id());
         } catch (NotFoundException $e) {
             return $this->failedResponse($e->getMessage(), $e->getCode());
         }
@@ -36,6 +37,7 @@ class TodoController extends BaseApiController
     {
         try {
             $todo = $this->todoService->create([
+                'user_id' => Auth::id(),
                 'title' => $request->validated('title'),
             ]);
         } catch (\Exception) {
@@ -48,7 +50,7 @@ class TodoController extends BaseApiController
     public function update(string $id, UpdateTodoRequest $request): JsonResponse
     {
         try {
-            $todo = $this->todoService->findById($id);
+            $todo = $this->todoService->findById($id, Auth::id());
             $updatedTodo = $this->todoService->update($todo, $request->validated());
         } catch (NotFoundException $e) {
             return $this->failedResponse($e->getMessage(), $e->getCode());
@@ -62,7 +64,7 @@ class TodoController extends BaseApiController
     public function done(string $id): JsonResponse
     {
         try {
-            $todo = $this->todoService->findById($id);
+            $todo = $this->todoService->findById($id, Auth::id());
             $updatedTodo = $this->todoService->markAsDone($todo);
         } catch (NotFoundException $e) {
             return $this->failedResponse($e->getMessage(), $e->getCode());
@@ -76,7 +78,7 @@ class TodoController extends BaseApiController
     public function delete(string $id): JsonResponse
     {
         try {
-            $todo = $this->todoService->findById($id);
+            $todo = $this->todoService->findById($id, Auth::id());
             $this->todoService->delete($todo);
         } catch (NotFoundException $e) {
             return $this->failedResponse($e->getMessage(), $e->getCode());

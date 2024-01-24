@@ -42,6 +42,11 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    public function todos()
+    {
+        return $this->hasMany(Todo::class);
+    }
+
     public function setPasswordAttribute(string $value)
     {
         $this->attributes['password'] = bcrypt($value);
